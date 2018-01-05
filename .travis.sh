@@ -44,6 +44,5 @@ travis_time_end
 travis_time_start script.test
 source bashrc.eus
 cat irteus/irtmodel.l
-irteusgl "(progn (load \"./irteus/irtmodel.l\") (load \"./irteus/test/joint.l\"))"
-#find irteus/test -iname "joint.l" | xargs -n1 irteusgl
+find irteus/test -iname "joint.l" | xargs -n1 irteusgl
 travis_time_end
