@@ -1097,6 +1097,7 @@
   (:calc-jacobian-from-link-list
    (link-list &rest args 
 	      &key move-target
+              (union-link-list (send self :calc-union-link-list link-list))
               ;; jacobian is represented in transform-coords
               (transform-coords move-target)
 	      (rotation-axis (cond 
@@ -1107,7 +1108,7 @@
 				 (t (make-list (length move-target) :initial-element t))))
               (col-offset 0)
 	      (dim (send self :calc-target-axis-dimension rotation-axis translation-axis))
-              (fik-len (send self :calc-target-joint-dimension link-list))
+              (fik-len (send self :calc-target-joint-dimension union-link-list))
 	      fik
 	      (tmp-v0 (instantiate float-vector 0))
 	      (tmp-v1 (instantiate float-vector 1))
@@ -1127,11 +1128,10 @@
     (send-all (send *robot* :calc-union-link-list *arms-link-list*) :joint)
    "
    (let* (len ul row
-	  child-reverse union-link-list
+	  child-reverse
 	  j jdim)
      (unless fik (setq fik (make-matrix dim fik-len)))
 ;;
-     (setq union-link-list (send self :calc-union-link-list link-list))
      (setq jdim (send self :calc-target-joint-dimension union-link-list))
      (if (atom (car link-list)) (setq link-list (list link-list)))
      (if (atom move-target) (setq move-target (list move-target)))
@@ -1149,10 +1149,10 @@
                (transform-coords (elt transform-coords m))
                (rotation-axis (elt rotation-axis m))
                (translation-axis (elt translation-axis m)) l)
+           (setq j (send ul :joint))
            (when (member ul link-list :test #'equal)
              (setq len (length link-list)
-                   l (position ul link-list :test #'equal)
-                   j (send ul :joint))
+                   l (position ul link-list :test #'equal))
              (labels ((find-parent
                        (pl ll)
                        (if (or (find pl ll) (null pl))
