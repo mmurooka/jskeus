@@ -1157,14 +1157,14 @@
                        (pl ll)
                        (if (or (find pl ll) (null pl))
                            pl (find-parent (send pl :parent) ll))))
-               (cond ((not (derivedp (send j :child-link) bodyset-link))
+               (cond ((not (derivedp ul bodyset-link))
                       (setq child-reverse nil))
                      ((or
                        (and (< (+ l 1) len)
-                            (not (eq (send j :child-link)
+                            (not (eq ul
                                      (find-parent (send (elt link-list (+ l 1)) :parent-link) link-list))))
                        (and (= len (+ l 1))
-                            (not (eq (send j :child-link)
+                            (not (eq ul
                                      (find-parent (send move-target :parent) link-list)))))
                       (setq child-reverse t))
                      (t (setq child-reverse nil))))
@@ -1173,7 +1173,7 @@
 			     (:xx #f(1 0 0)) (:yy #f(0 1 0)) (:zz #f(0 0 1))
 			     (:-x #f(-1 0 0)) (:-y #f(0 -1 0)) (:-z #f(0 0 -1))
 			     (t (j . axis))))
-		    (child-link (send j :child-link))
+		    (child-link ul)
 		    (parent-link (send j :parent-link))
 		    (default-coords (j . default-coords))
 		    (world-default-coords (send (send parent-link :copy-worldcoords)
