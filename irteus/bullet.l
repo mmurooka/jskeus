@@ -27,98 +27,32 @@
 
 (in-package "GEOMETRY")
 
-(defvar *eusbullet-lib*
-  (load-foreign (format nil "~A~A/lib/libBULLET.so" *eusdir* (unix:getenv "ARCHDIR"))))
-
 (export '(bt-collision-distance bt-collision-check))
-
-
-;; eusinteger_t callMakeSphereModel(eusfloat_t *r)
-(defforeign _bt-make-sphere-model
-  *eusbullet-lib*
-  "callMakeSphereModel"
-  (:string)
-  :integer
-  )
-
-;; eusinteger_t callMakeBoxModel(eusfloat_t *xyz)
-(defforeign _bt-make-box-model
-  *eusbullet-lib*
-  "callMakeBoxModel"
-  (:string)
-  :integer
-  )
-
-;; eusinteger_t callMakeCylinderModel(eusfloat_t *rh)
-(defforeign _bt-make-cylinder-model
-  *eusbullet-lib*
-  "callMakeCylinderModel"
-  (:string)
-  :integer
-  )
-
-;; eusinteger_t callMakeCapsuleModel(eusfloat_t *rh)
-(defforeign _bt-make-capsule-model
-  *eusbullet-lib*
-  "callMakeCapsuleModel"
-  (:string)
-  :integer
-  )
-
-;; eusinteger_t callMakeMeshModel(eusfloat_t *verticesPoints, eusinteger_t numVertices)
-(defforeign _bt-make-mesh-model
-  *eusbullet-lib*
-  "callMakeMeshModel"
-  (:string :integer)
-  :integer
-  )
-
-;; eusinteger_t callCalcCollisionDistance(eusinteger_t modelAddrA, eusinteger_t modelAddrB,
-;;                                          eusfloat_t *posA, eusfloat_t *quatA, eusfloat_t *posB, eusfloat_t *quatB,
-;;                                          eusfloat_t *dist, eusfloat_t *dir, eusfloat_t *pA, eusfloat_t *pB)
-(defforeign _bt-calc-collision-distance
-  *eusbullet-lib*
-  "callCalcCollisionDistance"
-  (:integer :integer
-   :string :string :string :string
-   :string :string :string :string)
-  :integer
-  )
-
-;; eusinteger_t callSetMargin(eusinteger_t modelAddr, eusfloat_t *margin)
-(defforeign _bt-set-margin
-  *eusbullet-lib*
-  "callSetMargin"
-  (:integer :string)
-  :integer
-  )
 
 (defun bt-make-model-from-body
     (b &key (csg (send b :csg)) (margin nil) m)
   "Make bullet model from body."
   (cond ((assoc :sphere csg)
          (setq m
-               (_bt-make-sphere-model
-                (float-vector (* 1e-3 (user::radius-of-sphere b))))
+               (btmakespheremodel
+                (* 1e-3 (user::radius-of-sphere b)))
                ))
         ((assoc :cube csg)
          (setq m
-               (_bt-make-box-model
-                (float-vector
-                 (* 1e-3 (user::x-of-cube b))
-                 (* 1e-3 (user::y-of-cube b))
-                 (* 1e-3 (user::z-of-cube b)))
+               (btmakeboxmodel
+                (* 1e-3 (user::x-of-cube b))
+                (* 1e-3 (user::y-of-cube b))
+                (* 1e-3 (user::z-of-cube b))
                 )))
         ((assoc :cylinder csg)
          (setq m
-               (_bt-make-cylinder-model
-                (float-vector
-                 (* 1e-3 (user::radius-of-cylinder b))
-                 (* 1e-3 (user::height-of-cylinder b)))
+               (btmakecylindermodel
+                (* 1e-3 (user::radius-of-cylinder b))
+                (* 1e-3 (user::height-of-cylinder b))
                 )))
         (t
          (setq m
-               (_bt-make-mesh-model
+               (btmakemeshmodel
                 (scale 1e-3 ;; [m]
                        (apply #'concatenate float-vector
                               (mapcar #'(lambda (v) (send b :inverse-transform-vector v)) (send b :vertices))))
@@ -126,7 +60,7 @@
                 ))
          ))
   (when margin
-    (_bt-set-margin m (float-vector margin)))
+    (btsetmargin m margin))
   m)
 
 (defmethod cascaded-coords
@@ -140,13 +74,13 @@
          (t
           (setq vs (flatten (send-all (send self :bodies) :vertices)))
           (setq m
-                (_bt-make-mesh-model
+                (btmakemeshmodel
                  (scale 1e-3 ;; [m]
                         (apply #'concatenate float-vector
                                (mapcar #'(lambda (v) (send self :inverse-transform-vector v)) vs)))
                  (length vs)
                  ))
-          (_bt-set-margin m (float-vector fat))
+          (btsetmargin m fat)
           ))
    (setf (get self :btmodel) m)
    m)
@@ -172,7 +106,7 @@
     (if (null fat2) (setq fat2 fat))
     (if (null m1) (setq m1 (send model1 :make-btmodel :fat fat)))
     (if (null m2) (setq m2 (send model2 :make-btmodel :fat fat2)))
-    (_bt-calc-collision-distance
+    (btcalccollisiondistance
      m1 m2 t1 r1 t2 r2
      dist dir p1 p2)
     (list (* 1e3 (elt dist 0)) (scale 1e3 p1) (scale 1e3 p2))
@@ -186,4 +120,4 @@
   (if (> (elt (bt-collision-distance model1 model2 :fat fat :fat2 fat2) 0) 0) 0 1)
   )
 
-(provide :eusbullet "$Id$")
+(provide :bullet "$Id$")
