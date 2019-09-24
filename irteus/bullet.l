@@ -65,25 +65,27 @@
 
 (defmethod cascaded-coords
   (:make-btmodel
-   (&key (fat 0) vs m)
-  "Make bullet model and save pointer of the bullet model."
-   (cond ((derivedp self body)
-          (setq m
-                (bt-make-model-from-body self :margin fat))
-          )
-         (t
-          (setq vs (flatten (send-all (send self :bodies) :vertices)))
-          (setq m
-                (btmakemeshmodel
-                 (scale 1e-3 ;; [m]
-                        (apply #'concatenate float-vector
-                               (mapcar #'(lambda (v) (send self :inverse-transform-vector v)) vs)))
-                 (length vs)
-                 ))
-          (btsetmargin m fat)
-          ))
-   (setf (get self :btmodel) m)
-   m)
+   (&key (fat 0))
+    "Make bullet model and save pointer of the bullet model."
+   (let (vs m)
+     (cond ((derivedp self body)
+            (setq m
+                  (bt-make-model-from-body self :margin fat))
+            )
+           (t
+            (setq vs (flatten (send-all (send self :bodies) :vertices)))
+            (setq m
+                  (btmakemeshmodel
+                   (scale 1e-3 ;; [m]
+                          (apply #'concatenate float-vector
+                                 (mapcar #'(lambda (v) (send self :inverse-transform-vector v)) vs)))
+                   (length vs)
+                   ))
+            (btsetmargin m fat)
+            ))
+     (setf (get self :btmodel) m)
+     m)
+    )
   )
 
 (defun bt-collision-distance
