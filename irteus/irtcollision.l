@@ -58,7 +58,7 @@
 
 (defun collision-check
     (model1 model2 &rest args &key &allow-other-keys)
-  "Check collision between model1 and model2 using Bullet.
+  "Check collision between model1 and model2.
    If return value is 0, no collision.
    Otherwise (return value is 1), collision."
   (cond ((eq *collision-algorithm* *collision-algorithm-pqp*)
