@@ -32,7 +32,7 @@
        (send obj1 :newcoords (funcall obj1-coords-func (float cnt))))
      (when obj2-coords-func
        (send obj2 :newcoords (funcall obj2-coords-func (float cnt))))
-     (send *irtviewer* :draw-objects)
+     (send *irtviewer* :draw-objects :flush nil)
      ;; get distance beween target-link and obj
      (setq ret (collision-distance obj1 obj2))
      ;; draw
@@ -101,7 +101,7 @@
      (when obj-coords-func
        (send obj :newcoords (funcall obj-coords-func (float cnt))))
      (send obj :newcoords (funcall obj-coords-func (float cnt)))
-     (send *irtviewer* :draw-objects)
+     (send *irtviewer* :draw-objects :flush nil)
      ;; get distance beween target-link and obj
      (setq ret (collision-distance target-link obj))
      (send (elt ret 1) :draw-on :flush nil :width 16 :size 50 :color (float-vector 1 0.4 0.4))
