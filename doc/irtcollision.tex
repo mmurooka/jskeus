@@ -72,11 +72,18 @@ irteusでは，他言語インターフェースを介して外部ライブラ�
 
 {\baselineskip=10pt
 \begin{verbatim}
+(load "irteus/demo/sample-arm-model.l")
+(setq *sarm* (instance sarmclass :init))
+(send *sarm* :reset-pose)
+(setq a 42)
+(send *sarm* :move-fingers a)
+(setq *target* (make-cube 30 30 30))
+(send *target* :translate #f(350 200 400))
 (objects (list *sarm* *target*))
 
-(send *sarm* :solve-ik *target* :debug-view t)
+(send *sarm* :inverse-kinematics *target* :move-target (send *sarm* :end-coords) :debug-view t)
 (while (> a 0)
-  (if (pqp-collision-check-objects
+  (if (collision-check-objects
        (list (send *sarm* :joint-fr :child-link)
              (send *sarm* :joint-fl :child-link))
        (list *target*))
