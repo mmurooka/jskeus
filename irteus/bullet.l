@@ -30,38 +30,40 @@
 (export '(bt-collision-distance bt-collision-check))
 
 (defun bt-make-model-from-body
-    (b &key (csg (send b :csg)) (margin nil) m)
+    (b &key (csg (send b :csg)) (margin nil))
   "Make bullet model from body."
-  (cond ((assoc :sphere csg)
-         (setq m
-               (btmakespheremodel
-                (* 1e-3 (user::radius-of-sphere b)))
-               ))
-        ((assoc :cube csg)
-         (setq m
-               (btmakeboxmodel
-                (* 1e-3 (user::x-of-cube b))
-                (* 1e-3 (user::y-of-cube b))
-                (* 1e-3 (user::z-of-cube b))
-                )))
-        ((assoc :cylinder csg)
-         (setq m
-               (btmakecylindermodel
-                (* 1e-3 (user::radius-of-cylinder b))
-                (* 1e-3 (user::height-of-cylinder b))
-                )))
-        (t
-         (setq m
-               (btmakemeshmodel
-                (scale 1e-3 ;; [m]
-                       (apply #'concatenate float-vector
-                              (mapcar #'(lambda (v) (send b :inverse-transform-vector v)) (send b :vertices))))
-                (length (send b :vertices))
-                ))
-         ))
-  (when margin
-    (btsetmargin m margin))
-  m)
+  (let (m)
+    (cond ((assoc :sphere csg)
+           (setq m
+                 (btmakespheremodel
+                  (* 1e-3 (user::radius-of-sphere b)))
+                 ))
+          ((assoc :cube csg)
+           (setq m
+                 (btmakeboxmodel
+                  (* 1e-3 (user::x-of-cube b))
+                  (* 1e-3 (user::y-of-cube b))
+                  (* 1e-3 (user::z-of-cube b))
+                  )))
+          ((assoc :cylinder csg)
+           (setq m
+                 (btmakecylindermodel
+                  (* 1e-3 (user::radius-of-cylinder b))
+                  (* 1e-3 (user::height-of-cylinder b))
+                  )))
+          (t
+           (setq m
+                 (btmakemeshmodel
+                  (scale 1e-3 ;; [m]
+                         (apply #'concatenate float-vector
+                                (mapcar #'(lambda (v) (send b :inverse-transform-vector v)) (send b :vertices))))
+                  (length (send b :vertices))
+                  ))
+           ))
+    (when margin
+      (btsetmargin m margin))
+    m)
+  )
 
 (defmethod cascaded-coords
   (:make-btmodel
